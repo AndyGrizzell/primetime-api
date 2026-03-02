@@ -106,6 +106,7 @@ def generate_buildsheet():
 
     # Column headers
     add(["ITEM DESCRIPTION", None, None, "Price", "Qty.", "Amount"], bold=True)
+    ws.auto_filter.ref = f"E{row-1}:E200"
     blank()
 
     # CHASSIS
@@ -371,19 +372,18 @@ def generate_proposal():
     for col, width in col_widths.items():
         ws.column_dimensions[col].width = width
 
-    row = [1]
+    r = [1]
 
-    def add(vals, bold=False, size=10):
+    def add(vals, bold=False, size=26):
         while len(vals) < 13:
             vals.append(None)
         for col_idx, val in enumerate(vals[:13], 1):
-            cell = ws.cell(row=row[0], column=col_idx, value=val)
-            if bold or size != 10:
-                cell.font = Font(bold=bold, size=size)
-        row[0] += 1
+            cell = ws.cell(row=r[0], column=col_idx, value=val)
+            cell.font = Font(bold=bold, size=size)
+        r[0] += 1
 
     def blank():
-        add([None] * 13)
+        r[0] += 1
 
     def section(text, size=24):
         add([text], bold=True, size=size)
@@ -394,30 +394,37 @@ def generate_proposal():
     strobe = d.get('strobeLight', '')
     ed = d.get('entranceDoor', '')
     selected_lift = d.get('wcLift', '').split(' (+')[0] if d.get('wcLift') else ''
+    safety = d.get('safetyKit') == 'Yes'
 
-    # Header
+    # Row 1 - Header
     add(["Customer", None, "Delivery Address", None, None, "Contact"], bold=True, size=24)
-    add([d.get('organizationName', ''), None, d.get('address', ''), None, None, "contact name", None, d.get('contact', '')])
-    add([None, None, d.get('cityState', ''), None, None, "contact phone #", None, d.get('phone', '')])
-    add([None, None, None, None, None, "contact email", None, d.get('email', '')])
+    # Row 2-4
+    add([d.get('organizationName',''), None, d.get('address',''), None, None, "contact name", None, d.get('contact','')], size=26)
+    add([None, None, d.get('cityState',''), None, None, "contact phone #", None, d.get('phone','')], size=26)
+    add([None, None, None, None, None, "contact email", None, d.get('email','')], size=26)
     blank()
+    # Row 6
     section("Vehicle / Contact Information", size=26)
     blank()
-    add(["Model Year:", 2026, None, "Agreement #:"])
-    add(["Vin #:", vins[0], None, "Delivery Time:"])
-    add(["Graphic:", "Yes" if d.get('customGraphics') == 'Yes' else '', None, "Representative:", d.get('salesperson', '')])
-    add(["Seat Material:", d.get('seatMaterial', 'Vinyl'), None, "Phone/Email:"])
+    # Row 8-11
+    add(["Model Year:", 2026, None, "Agreement #:"], bold=True, size=24)
+    add(["Vin #:", vins[0], None, "Delivery Time:"], bold=True, size=24)
+    add(["Graphic:", "Yes" if d.get('customGraphics')=='Yes' else '', None, "Representative:", d.get('salesperson','')], bold=True, size=24)
+    add(["Seat Material:", d.get('seatMaterial','Vinyl'), None, "Phone/Email:"], bold=True, size=24)
     blank()
+    # Row 13
     section("Prime-Time SV Mobility Vans", size=28)
+    # Rows 14-22 blank
     for _ in range(9): blank()
-
-    add(["MASTERS OF VAN CONVERSIONS"], bold=True)
-    add(["ADA - FULL COMPLIANCE - American with Disabilities Act"])
-    add(["FMVSS - FULL COMPLIANCE - Federal Motor Vehicle Safety Standards", None, None, "FORD QVM - FULL COMPLIANCE - Qualified Vehicle Modifier program"])
-    section("STANDARD CHASSIS EQUIPMENT AND FEATURES")
+    # Row 23
+    add(["MASTERS OF VAN CONVERSIONS"], bold=True, size=24)
+    add(["ADA - FULL COMPLIANCE - American with Disabilities Act"], size=28)
+    add(["FMVSS - FULL COMPLIANCE - Federal Motor Vehicle Safety Standards", None, None, "FORD QVM - FULL COMPLIANCE - Qualified Vehicle Modifier program"], size=28)
+    # Row 26
+    section("STANDARD CHASSIS EQUIPMENT AND FEATURES", size=24)
     std = [
-        ("3.5L PFDI V6 Gasoline Engine", "Safety Canopy Passenger Curtain Airbag System"),
-        ("10 Speed Electronic Automatic Transmission", "Securilok Anti-Theft System"),
+        ("3.5L PFDI V6 Gasoline Engine", "Safety Canopy® Passenger Curtain Airbag System"),
+        ("10 Speed Electronic Automatic Transmission", "Securilok® Anti-Theft System"),
         ("Transmission Oil Cooler", "Ford Co-Pilot 360 - Side Wind Stabilization, Post Collision Braking"),
         ("Front and Rear Disc Brakes with Full ABS", "Ford Co-Pilot 360 - Anti-Roll Bar Mitigation"),
         ("235/65R16 All Season Tires", "Three (3) USB Charging Ports in Passenger Area"),
@@ -425,158 +432,223 @@ def generate_proposal():
         ("Heavy Duty Alternator 250 AMP", "Rear Window Defroster"),
         ("Power Windows and Door Locks", "Cruise Control"),
         ("Electronic Stability Control", "Lane-Keeping System & Forward Collision Warning"),
-        ("Auto-High Beam Headlamps", "12 inch Center Display (SYNC4)"),
+        ("Auto-High Beam Headlamps", '12" Center Dislay (SYNC4)'),
         ("2-Way Manual Driver Seat", "Rear Recovery Tow Hook"),
         (" ", " "),
     ]
     for a, b in std:
-        add([a, None, None, b])
-
+        add([a, None, None, b], size=26)
+    # Row 39
     section("PRIME-TIME SPECIALTY VANS", size=26)
-    add([None, None, None, None, None, "Code", None, "Qty", None, "Extend"], bold=True)
-    add(["MODEL", None, None, None, None, None, None, 1])
-    add(["Ford Transit 136 inch Mid Roof Mobility Passenger Van", None, None, None, None, None, None, 0, "Included"])
-    add(["Ford Transit 148 inch Mid Roof Mobility Passenger Van", None, None, None, None, None, None, 1 if "12 Passenger" in chassis else 0, "Included"])
-    add(["Ford Transit 148 inch Extended Length High Roof Mobility Passenger Van", None, None, None, None, None, None, 1 if "15 Passenger" in chassis else 0, "Included"])
+    add([None, None, None, None, None, "Code", None, "Qty"], size=26)
+    ws.auto_filter.ref = "H40:H178"
+    add(["                                                                      MODEL"], bold=True, size=26)
+    add(['Ford Transit 136" Mid Roof Mobility Passenger Van', None, None, None, None, None, None, 0, "Included"], size=26)
+    add(['Ford Transit 148" Mid Roof Mobility Passenger Van', None, None, None, "ST", 2970, None, 1 if "12 Passenger" in chassis else 0, "Included"], size=26)
+    add(['Ford Transit 148" Extended Length High Roof Mobility Passenger Van', None, None, None, None, None, None, 1 if "15 Passenger" in chassis else 0, "Included"], size=26)
     notes = d.get('specialNotes', '')
-    add(["SPECIAL BUILD ITEMS / INSTRUCTIONS", None, None, None, None, None, None, 1 if notes else 0])
-    add([notes or None, None, None, None, None, None, None, 1 if notes else 0, "Included"])
-
-    section("SIDEWALL / REARWALL / CEILING")
-    add(["Ford OEM Cloth Interior", None, None, None, "05", "STD", None, 1, "Included"])
-    add(["PSV Fully Insulated Walls and Ceiling", None, None, None, None, None, None, 1, "Included"])
-    add(["PSV ABS Interior with Insulated Walls and Ceiling", None, None, None, None, None, None, 0, "Included"])
-
-    section("VAN FLOORING")
-    add(["Altro Anti-Slip Flooring", None, None, None, "05", 2248, None, 1 if "Altro" in fk else 0, "Included"])
-    add(["3/4 inch Exterior Grade Plywood SubFloor", None, None, None, None, None, None, 1, "Included"])
-    add(["Gerflor Anti-Slip Flooring", None, None, None, "05", 2824, None, 0, "Included"])
-    add(["Altro Wood Safety Anti-Slip Flooring", None, None, None, "05", 2175, None, 1 if "Wood" in fk else 0, "Included"])
-
-    section("EXTERIOR GRAPHICS AND PAINT")
-    add(["Full Body Exterior Paint", None, None, None, None, None, None, 1 if d.get('fullBodyPaintOEM') == 'Yes' or d.get('fullBodyPaintNonOEM') == 'Yes' else 0, "Included"])
-    add(["Custom Graphic Package", None, None, None, "05", 2235, None, 1 if d.get('customGraphics') == 'Yes' else 0, "Included"])
-
-    section("TRANSIT VAN CHASSIS")
-    for item_name in ["Rear Wheel Drive Vehicle", "Safety Canopy Passenger Curtain Airbag System",
+    add(["SPECIAL BUILD ITEMS / INSTRUCTIONS", None, None, None, None, None, None, 1 if notes else 0], bold=True, size=24)
+    add([notes or None, None, None, None, None, None, None, 1 if notes else 0, "Included"], size=26)
+    # Row 47
+    section("SIDEWALL / REARWALL / CEILING", size=24)
+    add(["Ford OEM Cloth Interior", None, None, None, "05", "STD", None, 1, "Included"], size=26)
+    add(["PSV Fully Insulated Walls and Ceiling", None, None, None, None, None, None, 1, "Included"], size=26)
+    add(["PSV ABS Interior with Insulated Walls and Ceiling", None, None, None, None, None, None, 0, "Included"], size=26)
+    add(["Custom Interior Package", None, None, None, "05", "STD", None, 0, "Included"], size=26)
+    # Row 52
+    section("VAN FLOORING", size=24)
+    add(["Altro Anti-Slip Flooring", None, None, None, "05", 2248, None, 1 if "Altro" in fk else 0, "Included"], size=26)
+    add(['3/4" Exterior Grade Plywood SubFloor', None, None, None, None, None, None, 1, "Included"], size=26)
+    add(["Gerflor Anti-Slip Flooring", None, None, None, "05", 2824, None, 0, "Included"], size=26)
+    add(["Altro Wood Safety Anti-Slip Flooring", None, None, None, "05", 2175, None, 1 if "Wood" in fk else 0, "Included"], size=26)
+    add(["ALFO Smart Floor Aluminum Flooring/Seating System", None, None, None, None, None, None, 0, "Included"], size=26)
+    # Row 58
+    section("EXTERIOR GRAPHICS AND PAINT", size=24)
+    add(["Full Body Exterior Paint", None, None, None, None, None, None, 1 if d.get('fullBodyPaintOEM')=='Yes' or d.get('fullBodyPaintNonOEM')=='Yes' else 0, "Included"], size=26)
+    add(["Custom Graphic Package", None, None, None, "05", 2235, None, 1 if d.get('customGraphics')=='Yes' else 0, "Included"], size=26)
+    # Row 61
+    section("TRANSIT VAN CHASSIS", size=24)
+    for item_name in ["Rear Wheel Drive Vehicle", "Safety Canopy® Passenger Curtain Airbag System",
                        "Ford Co-Pilot 360 - Anti-Roll and Side Wind Stabilization",
                        "Electronic Stability Control - Lane Keeping System",
                        "Pre-Collision Assist with Automatic Emergency Braking (AEB)",
-                       "GPS Navigation", "Two (2) Keyless Remote Entry Fobs"]:
-        add([item_name, None, None, None, None, None, None, 1, "Included"])
-    add(["Heavy Duty Anti-Slip Running Board on Passenger Side", None, None, None, "05", 2623, None, 1 if d.get('passengerRunningBoard') == 'Yes' else 0, "Included"])
-    add(["Heavy Duty Anti-Slip Running Board on Driver Side", None, None, None, "05", 2116, None, 1 if d.get('driverRunningBoard') == 'Yes' else 0, "Included"])
-
-    section("ENVIRONMENTAL CONTROL")
-    add(["Ford OEM Front and Rear Air-Conditioning", None, None, None, None, None, None, 1 if not ac or 'OEM' in ac else 0, "Included"])
-    add(["Ford Auxiliary Air-Conditioning System Upgrade - 32,000 btu System", None, None, None, None, None, None, 1 if 'Twin' in ac else 0, "Included"])
-
-    section("REAR (AUXILIARY) HEATING")
-    add(["Ford OEM Front Mount Floor Heater", None, None, None, "05", 2044, None, 1, "Included"])
-
-    section("DESTINATION SIGNS & WINDOWS")
-    add(["Front Destination Sign (TransSign)", None, None, None, "05", 2033, None, 1 if d.get('frontDestSign') == 'Yes' else 0, "Included"])
-    add(["Side Destination Sign (TransSign)", None, None, None, None, None, None, 1 if d.get('sideDestSign') == 'Yes' else 0, "Included"])
-
-    section("EXTERIOR LIGHTS")
-    add(["Rear Center Mount Brake Light", None, None, None, "05", 2802, None, 1, "Included"])
-    add(["Roof Mounted Strobe Light", None, None, None, "05", 2427, None, 1 if strobe and strobe != 'No' else 0, "Included"])
-
-    section("INTERIOR LIGHTS")
-    add(["Door Activated Interior Lights", None, None, None, None, None, None, 1, "Included"])
-    add(["LED Overhead Interior Strip Lights", None, None, None, "05", 2262, None, 1 if d.get('upgradedDomeLights') == 'Yes' else 0, "Included"])
-
-    section("AUDIO / VISUAL")
-    add(["Ford Transit OEM 10.2 inch Display Media Center", None, None, None, "05", 2158, None, 1, "Included"])
-    add(["PA System with 2 Speakers (Independent of Radio)", None, None, None, "05", 2388, None, 1 if d.get('paSystem') == 'Yes' or d.get('paSystemAudio') == 'Yes' else 0, "Included"])
-    add(["External Speaker with On/Off Switch", None, None, None, "05", 2556, None, 1 if d.get('externalSpeaker') == 'Yes' else 0, "Included"])
-
-    section("DOORS / WINDOWS / ROOF HATCHES")
-    add(["OEM Passenger Sliding Entry Door", None, None, None, "05", 2887, None, 1 if not ed or ed == 'None' else 0, "Included"])
-    add(["Electric Bi-Fold Bus Passenger Entry Door upgrade", None, None, None, "05", 2056, None, 1 if 'Bi Fold' in ed else 0, "Included"])
-    add(["Remote Entry Key Fob for Passenger entry door", None, None, None, "05", 2241, None, 1 if d.get('remoteEntry') == 'Yes' else 0, "Included"])
-    add(["A&M Remote Entry Door Keypad", None, None, None, "05", 2876, None, 1 if d.get('keyedRemoteEntry') == 'Yes' else 0, "Included"])
-    add(["Roof Hatch - Transpec", None, None, None, "05", 2133, None, 1 if d.get('roofHatch') == 'Yes' else 0, "Included"])
-
-    section("BRAUNABILITY WHEELCHAIR LIFTS")
+                       "GPS Navigation", "Two (2) Keyless Remote Entry Fobs",
+                       "Remote and Heated Exterior Mirrors"]:
+        add([item_name, None, None, None, None, None, None, 1, "Included"], size=26)
+    add(["Heavy Duty Anti-Slip Running Board on Passenger Side ", None, None, None, "05", 2623, None, 1 if d.get('passengerRunningBoard')=='Yes' else 0, "Included"], size=26)
+    add(["Full Size Spare Tire and Wheel - Mounted", None, None, None, "05", 2668, None, 0, "Included"], size=26)
+    add(["Heavy Duty Anti-Slip Running Board on Driver Side ", None, None, None, "05", 2116, None, 1 if d.get('driverRunningBoard')=='Yes' else 0, "Included"], size=26)
+    # Row 73
+    section("ENVIRONMENTAL CONTROL", size=24)
+    add(["Ford OEM Front and Rear Air-Conditioning", None, None, None, None, None, None, 1 if not ac or 'OEM' in ac else 0, "Included"], size=26)
+    add(["Ford Auxiliary Air-Conditioning System Upgrade - 32,000 btu System", None, None, None, None, None, None, 1 if 'Twin' in ac else 0, "Included"], size=26)
+    # Row 76
+    section("REAR (AUXILIARY) HEATING", size=24)
+    add(["Ford OEM Front Mount Floor Heater (OEM heat is routed through proprietary Prime-Time SV ducting system)", None, None, None, None, None, None, 1, "Included"], size=26)
+    add([None, None, None, None, "05", 2627], size=11)
+    # Row 79
+    section("ELECTRICAL ADDITIONS", size=24)
+    add(["Dual USB Charging Ports mounted in Passenger Area", None, None, None, "05", 2385, None, 1 if d.get('usbPorts') and int(d.get('usbPorts',0))>0 else 0, "Included"], size=26)
+    # Row 81
+    section("DESTINATION SIGNS & WINDOWS", size=24)
+    add(["Custom Molded Fiberglass Destination Sign Front View Window Only - no electronic sign", None, None, None, None, None, None, 0, "Included"], size=26)
+    add(["Custom Molded Fiberglass Destination Sign Front w/ Electronic Destination Sign", None, None, None, None, None, None, 1 if d.get('frontDestSign')=='Yes' else 0, "Included"], size=26)
+    # Row 84
+    section("EXTERIOR LIGHTS", size=24)
+    add(["Rear Center Mount Brake Light", None, None, None, "05", 2802, None, 1, "Included"], size=26)
+    add(["Roof Mounted Strobe Light                                              ", None, None, None, "05", 2427, None, 1 if strobe and strobe != 'No' else 0, "Included"], size=26)
+    # Row 87
+    section("INTERIOR LIGHTS", size=24)
+    add(["Door Activated Interior Lights", None, None, None, None, None, None, 1, "Included"], size=26)
+    add(["LED Overhead Interior Strip Lights ", None, None, None, "05", 2262, None, 1 if d.get('upgradedDomeLights')=='Yes' else 0, "Included"], size=26)
+    # Row 90
+    section("AUDIO / VISUAL", size=24)
+    add(['Ford Transit OEM 10.2" Display Media Center', None, None, None, "05", 2158, None, 1, "Included"], size=26)
+    add(["PA System with 2 Speakers (Independent of Radio)", None, None, None, "05", 2388, None, 1 if d.get('paSystem')=='Yes' or d.get('paSystemAudio')=='Yes' else 0, "Included"], size=26)
+    add(["Ground Plane for Two-Way Radio", None, None, None, "05", 2132, None, 0, "Included"], size=26)
+    add(["External Speaker with On/Off Switch ", None, None, None, "05", 2556, None, 1 if d.get('externalSpeaker')=='Yes' else 0, "Included"], size=26)
+    # Row 95
+    section("DOORS / WINDOWS / ROOF HATCHES", size=24)
+    add(["OEM Passenger Sliding Entry Door", None, None, None, "05", 2887, None, 1 if not ed or ed=='None' else 0, "Included"], size=26)
+    add(["Electric Bi-Fold Bus Passenger Entry Door upgrade", None, None, None, "05", 2056, None, 1 if 'Bi Fold' in ed else 0, "Included"], size=26)
+    add(["Remote Entry Key Fob for Passenger Bi-Fold bus entry door", None, None, None, "05", 2241, None, 1 if d.get('remoteEntry')=='Yes' else 0, "Included"], size=26)
+    add(["A&M Remote Entry Door Keypad  ", None, None, None, "05", 2876, None, 1 if d.get('keyedRemoteEntry')=='Yes' else 0, "Included"], size=26)
+    add(["A&M Wireless Remote Key Fob for Passenger Entry door operation", None, None, None, None, None, None, 0, "Included"], size=24)
+    add(["Roof Hatch - Transpec", None, None, None, "05", 2133, None, 1 if d.get('roofHatch')=='Yes' else 0, "Included"], size=26)
+    # Row 102
+    section("LUGGAGE RACK & STORAGE", size=24)
+    add(["Interior Storage Rack", None, None, None, "05", 2019, None, 0, "Included"], size=26)
+    add(["Rear Storage Rack", None, None, None, None, None, None, 0, "Included"], size=26)
+    # Row 105
+    section("BRAUNABILITY WHEELCHAIR LIFTS", size=24)
     lift_list = [
-        ("Braun Century Series Wheelchair Lift - 800lb (34x51)", "Braun Century 34x51 #800"),
-        ("Braun Century Series Wheelchair Lift - 1000lb (34x51)", "Braun Century 34x51 #1000"),
-        ("Braun Century Series Wheelchair Lift - 1000lb (37x54)", "Braun Century 37x54 #1000"),
-        ("Braun Century Rear Side Door - 1000lb (34x51)", "Braun Century Rear Side Door 34x51 #1000"),
-        ("Braun Millenium Series Wheelchair Lift - 800lb (34x51)", "Braun Millenium 34x51 #800"),
-        ("Braun Millenium Series Wheelchair Lift - 1000lb (34x51)", "Braun Millenium 34x51 #1000"),
-        ("Braun Shift N Step Lift", "Braun Shift N Step Lift"),
+        ('Braun Century Series Wheelchair Lift - 800lb (33" x 51") ', "05", 2695, "Braun Century 33x51 #800"),
+        ('Braun Century Series Wheelchair Lift - 800lb (34" x 51")     ', "05", 2695, "Braun Century 34x51 #800"),
+        ('Braun Century Series Wheelchair Lift - 800lb (34" x 54") ', "05", 2697, "Braun Century 34x54 #800"),
+        ('Braun Century Series Wheelchair Lift  - 1000lb (34" x 51")', "05", 2699, "Braun Century 34x51 #1000"),
+        ('Braun Century Series Wheelchair Lift - 1000lb (34" x 54") ', None, 2910, "Braun Century 37x54 #1000"),
+        ('Braun Millenium Series Wheelchair Lift - 800lb (33" x 51")', "05", 2893, "Braun Millenium 33x51 #800"),
+        ('Braun Millenium Series Wheelchair Lift - 800lb (34" x 51")   ', "05", 2893, "Braun Millenium 34x51 #800"),
+        ('Braun Millenium Series Wheelchair Lift - 800lb (37" x 51") ', None, None, ""),
+        ("Vinyl Cover for Wheelchair Lift", None, None, ""),
+        ("Seat Belt on Braun Lift - Installed", None, None, ""),
     ]
-    for name, key in lift_list:
-        add([name, None, None, None, "05", None, None, 1 if selected_lift == key else 0, "Included"])
+    for row_data in lift_list:
+        name, code, item_code, key = row_data
+        q = 1 if selected_lift and selected_lift == key else 0
+        add([name, None, None, None, code, item_code, None, q, "Included"], size=26)
 
-    add(["WHEELCHAIR LIFT FAST IDLE WITH INTERLOCK"], bold=True)
-    add(["ADA Fast Idle with Lift Interlock", None, None, None, "05", 2714, None, 1 if d.get('adaInterlock') == 'Yes' else 0, "Included"])
-
-    add(["Q-STRAINT WHEELCHAIR SECUREMENTS & ACCESSORIES"], bold=True)
-    add(["Q-Straint Slide-N-Click Automatic Wheelchair Securements", None, None, None, "05", 2245, None, int(d.get('qStraintSlide') or 0), "Included"])
-    add(["Q-Straint Automatic Wheelchair Securements (L-Track)", None, None, None, None, None, None, int(d.get('qStraintLTrack') or 0), "Included"])
-    add(["Full-Length L-Track mounted to Sidewall", None, None, None, None, None, None, int(d.get('lTrackQty') or 0), "Included"])
-
-    section("SAFETY OPTIONS")
-    safety = d.get('safetyKit') == 'Yes'
-    add(["5 lb Fire Extinguisher", None, None, None, "05", 2089, None, 1 if safety else 0, "Included"])
-    add(["16 Unit First Aid Kit", None, None, None, "05", 2090, None, 1 if safety else 0, "Included"])
-    add(["Emergency Triangle Kit", None, None, None, "05", 2091, None, 1 if safety else 0, "Included"])
-    add(["Back-Up Alarm", None, None, None, "05", 2092, None, 1 if safety else 0, "Included"])
-    add(["Ford OEM Back-Up Camera System", None, None, None, "05", 2123, None, 1, "Included"])
-    add(["Decal Please Watch Your Step", None, None, None, None, None, None, 1 if d.get('watchStepDecal') == 'Yes' else 0, "Included"])
-    add(["Decal Vehicle Height Sticker", None, None, None, None, None, None, 1 if d.get('heightDecal') == 'Yes' else 0, "Included"])
-
-    section("GRAB RAILS / STANCHIONS / PANELS")
-    add(["Stainless Steel Right Hand Entry Vertical Grab Rail", None, None, None, "05", 2049, None, 1, "Included"])
-    add(["Parallel Grab Bars - Entry Door", None, None, None, None, None, None, 1 if d.get('parallelGrabBars') == 'Yes' else 0, "Included"])
-    add(["Stanchion and Modesty Panel Behind Driver", None, None, None, "05", 2857, None, 1 if d.get('stantions') == 'Yes' else 0, "Included"])
-
-    section("PASSENGER SEATING")
-    add(["High-Back Double Seat w/ Vinyl cover", None, None, None, "05", 2065, None, int(d.get('seatDoubleGO') or 0), "Included"])
-    add(["High-Back Single Seat w/ Vinyl cover", None, None, None, "05", 2066, None, int(d.get('seatSingleGO') or 0), "Included"])
-    add(["Mid-High Double Foldaway Seat w/ Vinyl cover", None, None, None, "05", 2067, None, int(d.get('seatDoubleFoldaway') or 0), "Included"])
-    add(["Mid-High Single Foldaway Seat w/ Vinyl cover", None, None, None, "05", 2068, None, int(d.get('seatSingleFoldaway') or 0), "Included"])
-    add(["Black Flip-Up Armrests on Aisle Seats", None, None, None, "05", 2077, None, int(d.get('seatArmRests') or 0), "Included"])
-
-    add(["SEAT BELTS"], bold=True)
-    add(["3-Point Lap and Shoulder Harness Seat Belts for All Passenger Seats", None, None, None, "05", 2086, None, 1, "Included"])
-    add(["Seat Belt Extension 12 inch", None, None, None, "05", 2087, None, int(d.get('seatBeltExtQty') or 0), "Included"])
-
-    # Terms
+    add(["WHEELCHAIR LIFT FAST IDLE WITH INTERLOCK"], bold=True, size=24)
+    add(["ADA Fast Idle with Lift Interlock", None, None, None, "05", 2714, None, 1 if d.get('adaInterlock')=='Yes' else 0, "Included"], size=26)
+    add(["Q-STRAINT WHEELCHAIR SECUREMENTS & ACCESSORIES"], bold=True, size=24)
+    add(["Q-Straint Slide-N-Click Automatic Wheelchair Securements", None, None, None, "05", 2245, None, int(d.get('qStraintSlide') or 0), "Included"], size=26)
+    add(["Q-Straint Automatic Wheelchair Securements (L-Track)", None, None, None, None, None, None, int(d.get('qStraintLTrack') or 0), "Included"], size=26)
+    add(["QRT 360 Securements - L-Track - Combo-Lap/Shoulder", None, None, None, 0, "Included", 0, 0], size=26)
+    add(["QRT 360 Securements - Slide N Click - Combo-Lap/Shoulder", None, None, None, 0, "Included", None, 0], size=26)
+    add(["Q-Straint ONE Wheelchair Securement System", None, None, None, 0, "Included", None, 0], size=26)
+    add(["Full-Length L-Track mounted to Sidewall Above Window Line for Shoulder Securement Easy-Access", None, None, None, None, None, None, int(d.get('lTrackQty') or 0), "Included"], size=26)
+    add(["WHEELCHAIR SECUREMENT STORAGE & ACCESSORIES"], bold=True, size=26)
+    add(["PSV Wheelchair Securement Storage box", None, None, None, "05", 2179, None, 0, "Included"], size=26)
+    add(["Q Straint Belt Storage Pouch", None, None, None, "05", 2104, None, 0, "Included"], size=24)
+    add(["Q-Straint Belt Cutter   ", None, None, None, "05", 2105, None, 0, "Included"], size=24)
+    add(['Q-Straint 18" Blue Webbing Loops', None, None, None, None, None, None, 0], size=24)
+    add(["TDSS-L Track Wheelchair Securement Storage on Foldaways  ", None, None, None, None, None, None, 0], size=24)
+    add(["TDSS-Slide N Click Wheelchair Securement Storage on Foldaways  ", None, None, None, None, None, None, 0], size=24)
+    add(["Priority Seating Sign (required for ADA compliance)", None, None, None, None, None, None, 0], size=24)
+    add(["Wheelchair Decal (International Symbol of Accessibility)  ", None, None, None, None, None, None, 0], size=24)
+    # Row 134
+    section("SAFETY OPTIONS", size=24)
+    add(["5 lb Fire Extinguisher", None, None, None, "05", 2089, None, 1 if safety else 0, "Included"], size=26)
+    add(["16 Unit First Aid Kit", None, None, None, "05", 2090, None, 1 if safety else 0, "Included"], size=26)
+    add(["Emergency Triangle Kit", None, None, None, "05", 2091, None, 1 if safety else 0, "Included"], size=26)
+    add(["Back-Up Alarm", None, None, None, "05", 2092, None, 1 if safety else 0, "Included"], size=26)
+    add(["Ford OEM Back-Up Camera System ", None, None, None, "05", 2123, None, 1, "Included"], size=26)
+    blank()
+    add(["Fire Blanket", None, None, None, 0, "Included", 0, 0], size=26)
+    add(["Rosco Backup Warning System BSSK-1000 Surface Mount", None, None, None, 0, "Included", 0, 0], size=26)
+    add(["Red Light Over Emergency Exits", None, None, None, 0, "Included", 0, 0], size=26)
+    add(['"NO SMOKING" Sign', None, None, None, 0, "Included", 0, 0], size=26)
+    add(['"NO EATING" Sign', None, None, None, 0, "Included", 0, 0], size=26)
+    add(['Decal "Please Fasten your Seat Belt"', None, None, None, 0, "Included", 0, 0], size=26)
+    add(['Decal "Please Watch Your Step"', None, None, None, 0, "Included", 0, 0], size=26)
+    add(["Decal Vehicle Height Sticker ", None, None, None, 0, "Included", 0, 0], size=26)
+    # Row 149
+    section("GRAB RAILS / STANCHIONS / PANELS", size=24)
+    add(["Stainless Steel Right Hand Entry Vertical Grab Rail ", None, None, None, "05", 2049, None, 1, "Included"], size=26)
+    add(["Stainless Steel Left Hand Entry Vertical Grab Rail", None, None, None, None, None, None, 0, "Included"], size=26)
+    add(["Stanchion and Modesty Panel Behind Driver w/ Plexiglas Protective Barrier", None, None, None, "05", 2857, None, 1 if d.get('stantions')=='Yes' else 0, "Included"], size=26)
+    add(["Powder Coated Entry Grab Handles mounted to Bus Doors", None, None, None, None, None, None, 0, "Included"], size=26)
+    # Row 154
+    section("DRIVER & CO-PILOT SEATING", size=24)
+    add(["Ford OEM Driver's Seat", None, None, None, "05", 2850, None, 1, "Included"], size=26)
+    add(["Ford OEM Co-Pilot Seat", None, None, None, "05", 2205, None, 1, "Included"], size=26)
+    add(["Remove Ford OEM Co-Pilot Seat - Install insert replacement here", None, None, None, None, None, None, 0, "Included"], size=26)
+    add(["Driver Seat Power Base", None, None, None, "05", 2866, None, 0, "Included"], size=26)
+    # Row 159
+    section("PASSENGER SEATING", size=24)
+    add(["High-Back Double Seat w/ Vinyl cover", None, None, None, "05", 2065, None, int(d.get('seatDoubleGO') or 0), "Included"], size=26)
+    add(["High-Back Single Seat w/ Vinyl cover", None, None, None, "05", 2066, None, int(d.get('seatSingleGO') or 0), "Included"], size=26)
+    add(["Mid-High Double Foldaway Seat w/ Vinyl cover", None, None, None, "05", 2067, None, int(d.get('seatDoubleFoldaway') or 0), "Included"], size=26)
+    add(["Mid-High Single Foldaway Seat w/ Vinyl cover", None, None, None, "05", 2068, None, int(d.get('seatSingleFoldaway') or 0), "Included"], size=26)
+    add(["Mid-High Double Seat w/ Vinyl cover", None, None, None, "05", 2243, None, 0, "Included"], size=26)
+    add(["Mid-High Single Seat w/ Vinyl cover", None, None, None, "05", 2851, None, 0, "Included"], size=26)
+    # Row 166
+    section("SEATING OPTIONS", size=24)
+    add(["Black Anti-Vandal Grab/Assist Handles on Seat Backs", None, None, None, "05", 2311, None, 0, "Included"], size=26)
+    add(["Yellow Anti-Vandal Grab/Assist Handles on Seat Backs", None, None, None, "05", 2309, None, 0, "Included"], size=26)
+    add(["Black Flip-Up Armrests on Aisle Seats", None, None, None, "05", 2077, None, int(d.get('seatArmRests') or 0), "Included"], size=26)
+    add(["Upholstered Flip-Up Armrests", None, None, None, "05", 2076, None, 0, "Included"], size=26)
+    add(["Child Restraint System per seat (CRS225 Clips) ", None, None, None, "05", 2554, None, 0, "Included"], size=26)
+    add(["Reclining Passenger Seats (for Rigid/Fixed seats only)", None, None, None, 0, "Included", None, 0], size=26)
+    # Row 173
+    section("SEAT BELTS", size=24)
+    add(["3-Point Lap and Shoulder Harness Seat Belts for All Passenger Seats", None, None, None, "05", 2086, None, 1, "Included"], size=26)
+    add(['Seat Belt Extension, 12"   ', None, None, None, "05", 2087, None, int(d.get('seatBeltExtQty') or 0), "Included"], size=26)
+    add(['USR Seat Belt Extension, 12"   ', None, None, None, "05", 2282, None, 0, "Included"], size=26)
+    # Row 177
+    section("ADDITIONAL ITEMS", size=24)
+    add(["CAT Leash - Catalytic Converter Theft Deterrent Device - FORD", None, None, None, None, None, None, 0, "Included"], size=26)
+    blank()
+    # Row 180
     section("TERMS AND CONDITIONS", size=26)
     blank()
-    add([None]*7 + ["Vehicle Price:", None, pt])
+    add([None]*7 + ["Vehicle Price:", 0, pt], bold=True, size=26)
     blank()
-    add(["Terms:  ", "Due Upon Receipt", None, None, None, "Mobility Rebate:", None, "Large Fleet Discount", None, ""])
+    add(["Terms:  ", "Due Upon Receipt", None, None, None, "Mobility Rebate:", None, "Large Fleet Discount", None, ""], size=26)
     blank()
     mobility_rebate = -6451 if d.get('mobilityIncentive') == 'Yes' else 0
-    add(["Deposit:  ", "10% Down Payment Due at Signing", None, None, None, "Chassis Rebate:", None, "Accessibility Rebate:", None, mobility_rebate])
+    add(["Deposit:  ", "10% Down Payment Due at Signing", None, None, None, "Chassis Rebate:", None, "Accessibility Rebate:", None, mobility_rebate], size=26)
     blank()
-    add(["Quote Valid For:", "30 Days from Date", None, None, None, None, None, "Subtotal:", None, pt + mobility_rebate])
+    add(["Quote Valid For: ", "30 Days from Date", None, None, None, None, None, "Subtotal:", pt + mobility_rebate], size=26)
     blank()
-    add(["This Agreement is Confidential and not Subject to Distribution", None, None, None, None, None, None, "Delivery:", None, 475])
+    add(["This Agreement is Confidential and not Subject to Distribution"], size=14)
     blank()
     blank()
     blank()
-    add(["Customer Signature", None, None, None, None, None, None, "Unit Total:", None, grand])
+    add([None]*7 + ["Sales Tax:", 0, 0], size=26)
     blank()
-    add(["Printed Name", None, None, None, None, None, None, " "])
-    add([None]*7 + ["Quantity:", qty])
-    add(["Date"])
-    add([None]*7 + ["Net Due:", grand * qty])
+    add(["Customer Signature", None, None, None, None, None, None, "Unit Total:", grand, grand * qty], size=26)
     blank()
-    add(["To Purchase this Vehicle, please sign this intent to purchase agreement. By Signing this agreement the Signer understands they are entering a contract to purchase the product/service presented."])
+    add([None]*7 + ["Quantity:", qty], size=11)
+    add(["Printed Name", None, None, None, None, None, None, " "], size=26)
+    add([None]*7 + ["Net Due:", grand * qty], size=26)
+    add([None]*9 + [1], size=11)
+    add(["Date"], size=26)
+    blank()
+    add(["To Purchase this Vehicle, please sign this intent to purchase agreement.  By Signing this agreement the Signer understands they are entering a contract to purchase the product/service presented."], size=14)
+    blank()
+    add(["     FloorPlan"], bold=True, size=26)
 
-    for _ in range(80): blank()
-    add(["Customer Order Information"], bold=True)
-    add(["Please fill in the information below when placing your order."])
-    add(["Customer Name to Read on Title:"])
-    add(["Customer Address to Read on Title:"])
-    add(["Federal Tax ID#:"])
-    add(["Are you Tax-Exempted?  Yes/No"])
+    # Fill to row 292
+    while r[0] < 292:
+        blank()
+
+    add(["Customer Order Information"], bold=True, size=26)
+    add(["Please fill in the information below when placing your order.  Information will be used for Delivery Documentation."], size=16)
+    add(["Customer Name to Read on Title:"], bold=True, size=26)
+    add(["Customer Address to Read on Title:"], bold=True, size=26)
+    add(["Federal Tax ID#:"], bold=True, size=26)
+    add(["Are you Tax-Exempted?  Yes/No"], bold=True, size=26)
 
     output = io.BytesIO()
     wb.save(output)
@@ -585,6 +657,7 @@ def generate_proposal():
     org = (d.get('organizationName') or 'Build').replace(' ', '_')
     return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                      as_attachment=True, download_name=f'BSI_{org}_Proposal.xlsx')
+
 
 
 def calculate_pt(d):
