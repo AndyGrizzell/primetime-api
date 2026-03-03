@@ -219,12 +219,12 @@ def generate_buildsheet():
     # --- INCENTIVE (E158) ---
     ws['E158'] = 1 if d.get('mobilityIncentive') == 'Yes' else 0
 
-    output = io.BytesIO()
-    wb.save(output)
-    output.seek(0)
-
+    import tempfile, os
     org = (d.get('organizationName') or 'Build').replace(' ', '_')
-    return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    tmp = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
+    tmp.close()
+    wb.save(tmp.name)
+    return send_file(tmp.name, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                      as_attachment=True, download_name=f'BSI_{org}_BuildSheet.xlsx')
 
 
@@ -369,12 +369,12 @@ def generate_proposal():
     ws['I198'] = qty
     ws['I200'] = grand * qty
 
-    output = io.BytesIO()
-    wb.save(output)
-    output.seek(0)
-
+    import tempfile, os
     org = (d.get('organizationName') or 'Build').replace(' ', '_')
-    return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    tmp = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
+    tmp.close()
+    wb.save(tmp.name)
+    return send_file(tmp.name, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                      as_attachment=True, download_name=f'BSI_{org}_Proposal.xlsx')
 
 
